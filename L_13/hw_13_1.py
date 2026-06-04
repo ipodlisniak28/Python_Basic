@@ -2,42 +2,39 @@
 import codecs
 
 def delete_html_tags(html_file, result_file='cleaned.txt'):
-    # Відкриваю файл для читання
+    # Відкриваю і читаю вихідний файл
     with codecs.open(html_file, 'r', 'utf-8') as file:
         html = file.read()
 
-    # 1. Очищення від HTML-тегів
-    # Поки в тексті є символи '<' та '>'
-    while '<' in html and '>' in html:
-        start_index = html.find('<')
-        end_index = html.find('>', start_index)
+    # Очищую від тегів
+    text_without_tags = ""
+    inside_tag = False  # Цей "прапорець" показує, чи знаходжусь Я всередині тегу
 
-        # Якщо знайшов коректну пару символів
-        if start_index != -1 and end_index != -1:
-            # Склеюю текст ДО тегу та текст ПІСЛЯ тегу, пропускаючи сам тег
-            html = html[:start_index] + html[end_index + 1:]
-        else:
-            break  # Запобіжник, якщо раптом є '<', але немає '>'
+    # Перебираю кожен символ у тексті
+    for char in html:
+        if char == '<':
+            inside_tag = True  # Зайшов в тег, перестаю записувати символи
+        elif char == '>':
+            inside_tag = False  # Вийшов з тегу, можна знову записувати
+        elif not inside_tag:
+            text_without_tags += char  # Записую символ, тільки якщо він не в тегу
 
-    # Додатково прибираю порожні рядки
-    # Розбиваю текст на список рядків
-    lines = html.split('\n')
+    # Прибираю рядки, у яких немає інформації
     cleaned_lines = []
 
-    for line in lines:
-        # Методом strip() прибираю пробіли по краях.
-        # Якщо після цього рядок не порожній, додаю його до списку.
+    # Розбиваю текст на окремі рядки
+    for line in text_without_tags.split('\n'):
+        # Метод strip() видаляє пробіли. Якщо після цього рядок не порожній — він мені буде потрібен
         if line.strip():
+            # Додаю очищений від зайвих пробілів по краях рядок
             cleaned_lines.append(line.strip())
 
-    # Збираю список назад у єдиний текст, поєднуючи рядки перенесенням
-    cleaned_text = '\n'.join(cleaned_lines)
+    # Збираю всі корисні рядки назад у текст (з переносом на новий рядок)
+    final_text = '\n'.join(cleaned_lines)
 
-    # Записую у новий файл
+    # Записую результат у новий файл
     with codecs.open(result_file, 'w', 'utf-8') as file:
-        file.write(cleaned_text)
+        file.write(final_text)
 
-    print(f"Файл успішно очищено! Результат збережено у {result_file}")
-
-# Викликаю функцію
+# Викликаю функцію для перевірки
 # delete_html_tags('draft.html')
